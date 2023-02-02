@@ -1,12 +1,11 @@
 library paginate_firestore;
 
 import 'dart:math';
-
+import 'package:chefs/providers/blocked_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:chefs/providers/blocked_provider.dart';
 import 'bloc/pagination_cubit.dart';
 import 'bloc/pagination_listeners.dart';
 import 'widgets/bottom_loader.dart';
@@ -28,6 +27,7 @@ class PaginateFirestore extends StatefulWidget {
     this.onError,
     this.onReachedEnd,
     this.onLoaded,
+    this.onEmpty = const EmptyDisplay(),
     this.emptyDisplay = const EmptyDisplay(),
     this.separator = const EmptySeparator(),
     this.initialLoader = const InitialLoader(),
@@ -49,6 +49,7 @@ class PaginateFirestore extends StatefulWidget {
   }) : super(key: key);
 
   final Widget bottomLoader;
+  final Widget onEmpty;
   final Widget emptyDisplay;
   final SliverGridDelegate gridDelegate;
   final Widget initialLoader;
