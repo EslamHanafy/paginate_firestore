@@ -40,6 +40,7 @@ class PaginateFirestore extends StatefulWidget {
     this.listeners,
     this.scrollController,
     this.allowImplicitScrolling = false,
+    this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     this.pageController,
     this.onPageChanged,
     this.header,
@@ -59,6 +60,7 @@ class PaginateFirestore extends StatefulWidget {
   final Query query;
   final bool reverse;
   final bool allowImplicitScrolling;
+  final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
   final ScrollController? scrollController;
   final PageController? pageController;
   final Axis scrollDirection;
@@ -92,17 +94,13 @@ class _PaginateFirestoreState extends State<PaginateFirestore> {
       bloc: _cubit,
       builder: (context, state) {
         if (state is PaginationInitial) {
-          return widget.initialLoader;
+          return _buildWithScrollView(context, widget.initialLoader);
         } else if (state is PaginationError) {
-          return SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            child: Container(
-              child: (widget.onError != null)
+          return _buildWithScrollView(
+              context,
+              (widget.onError != null)
                   ? widget.onError!(state.error)
-                  : ErrorDisplay(exception: state.error),
-              height: MediaQuery.of(context).size.height,
-            ),
-          );
+                  : ErrorDisplay(exception: state.error));
         } else {
           final loadedState = state as PaginationLoaded;
           if (widget.onLoaded != null) {
@@ -113,13 +111,7 @@ class _PaginateFirestoreState extends State<PaginateFirestore> {
           }
 
           if (loadedState.documentSnapshots.isEmpty) {
-            return SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              child: Container(
-                child: widget.emptyDisplay,
-                height: MediaQuery.of(context).size.height,
-              ),
-            );
+            return _buildWithScrollView(context, widget.onEmpty);
           }
           return widget.itemBuilderType == PaginateBuilderType.listView
               ? _buildListView(loadedState)
@@ -128,6 +120,16 @@ class _PaginateFirestoreState extends State<PaginateFirestore> {
                   : _buildPageView(loadedState);
         }
       },
+    );
+  }
+
+  Widget _buildWithScrollView(BuildContext context, Widget child) {
+    return SingleChildScrollView(
+      child: Container(
+        alignment: Alignment.center,
+        height: MediaQuery.of(context).size.height,
+        child: child,
+      ),
     );
   }
 
@@ -177,6 +179,7 @@ class _PaginateFirestoreState extends State<PaginateFirestore> {
       shrinkWrap: widget.shrinkWrap,
       scrollDirection: widget.scrollDirection,
       physics: widget.physics,
+      keyboardDismissBehavior: widget.keyboardDismissBehavior,
       slivers: [
         if (widget.header != null) widget.header!,
         SliverPadding(
@@ -247,6 +250,7 @@ class _PaginateFirestoreState extends State<PaginateFirestore> {
       shrinkWrap: widget.shrinkWrap,
       scrollDirection: widget.scrollDirection,
       physics: widget.physics,
+      keyboardDismissBehavior: widget.keyboardDismissBehavior,
       slivers: [
         if (widget.header != null) widget.header!,
         SliverPadding(
